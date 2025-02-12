@@ -6,8 +6,14 @@
 <?php endif; ?>
 
 <div class="row mb-3">
-    <div class="col">
+    <div class="col-md-6">
         <a href="<?php echo site_url('products/add'); ?>" class="btn btn-primary">Tambah Produk Baru</a>
+    </div>
+    <div class="col-md-6">
+        <form action="<?php echo site_url('products'); ?>" method="get" class="d-flex">
+            <input type="text" name="search" class="form-control me-2" placeholder="Cari produk..." value="<?php echo $search; ?>">
+            <button type="submit" class="btn btn-outline-primary">Cari</button>
+        </form>
     </div>
 </div>
 
@@ -16,9 +22,36 @@
         <thead>
             <tr>
                 <th>No</th>
-                <th>Nama Produk</th>
-                <th>Harga</th>
-                <th>Stok</th>
+                <th>
+                    Nama Produk
+                    <a href="<?php echo site_url('products?sort_by=name&sort_order=' . ($sort_by == 'name' && $sort_order == 'asc' ? 'desc' : 'asc') . ($search ? '&search='.$search : '')); ?>" class="text-decoration-none">
+                        <?php if($sort_by == 'name'): ?>
+                            <?php echo $sort_order == 'asc' ? '↑' : '↓'; ?>
+                        <?php else: ?>
+                            ↕
+                        <?php endif; ?>
+                    </a>
+                </th>
+                <th>
+                    Harga
+                    <a href="<?php echo site_url('products?sort_by=price&sort_order=' . ($sort_by == 'price' && $sort_order == 'asc' ? 'desc' : 'asc') . ($search ? '&search='.$search : '')); ?>" class="text-decoration-none">
+                        <?php if($sort_by == 'price'): ?>
+                            <?php echo $sort_order == 'asc' ? '↑' : '↓'; ?>
+                        <?php else: ?>
+                            ↕
+                        <?php endif; ?>
+                    </a>
+                </th>
+                <th>
+                    Stok
+                    <a href="<?php echo site_url('products?sort_by=stock&sort_order=' . ($sort_by == 'stock' && $sort_order == 'asc' ? 'desc' : 'asc') . ($search ? '&search='.$search : '')); ?>" class="text-decoration-none">
+                        <?php if($sort_by == 'stock'): ?>
+                            <?php echo $sort_order == 'asc' ? '↑' : '↓'; ?>
+                        <?php else: ?>
+                            ↕
+                        <?php endif; ?>
+                    </a>
+                </th>
                 <th>Status</th>
                 <th>Aksi</th>
             </tr>
@@ -47,7 +80,13 @@
             <?php endforeach; ?>
             <?php if(empty($products)): ?>
             <tr>
-                <td colspan="6" class="text-center">Tidak ada data produk</td>
+                <td colspan="6" class="text-center">
+                    <?php if($search): ?>
+                        Tidak ada produk yang cocok dengan pencarian "<?php echo htmlspecialchars($search); ?>"
+                    <?php else: ?>
+                        Tidak ada data produk
+                    <?php endif; ?>
+                </td>
             </tr>
             <?php endif; ?>
         </tbody>

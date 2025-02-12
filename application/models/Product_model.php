@@ -7,7 +7,26 @@ class Product_model extends CI_Model {
         parent::__construct();
     }
     
-    public function get_all_products() {
+    public function get_all_products($search = '', $sort_by = 'name', $sort_order = 'asc') {
+        if (!empty($search)) {
+            $this->db->like('name', $search);
+            $this->db->or_like('price', $search);
+            $this->db->or_like('stock', $search);
+        }
+        
+        // Validasi kolom sorting yang diizinkan
+        $allowed_sort = array('name', 'price', 'stock');
+        if (!in_array($sort_by, $allowed_sort)) {
+            $sort_by = 'name';
+        }
+        
+        // Validasi urutan sorting yang diizinkan
+        $sort_order = strtolower($sort_order);
+        if (!in_array($sort_order, array('asc', 'desc'))) {
+            $sort_order = 'asc';
+        }
+        
+        $this->db->order_by($sort_by, $sort_order);
         $query = $this->db->get('products');
         return $query->result();
     }

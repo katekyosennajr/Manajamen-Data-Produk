@@ -11,8 +11,15 @@ class Products extends CI_Controller {
     }
 
     public function index() {
-        $data['products'] = $this->product_model->get_all_products();
+        $search = $this->input->get('search');
+        $sort_by = $this->input->get('sort_by', TRUE) ?: 'name';
+        $sort_order = $this->input->get('sort_order', TRUE) ?: 'asc';
+        
+        $data['products'] = $this->product_model->get_all_products($search, $sort_by, $sort_order);
         $data['title'] = 'Daftar Produk';
+        $data['search'] = $search;
+        $data['sort_by'] = $sort_by;
+        $data['sort_order'] = $sort_order;
         
         $this->load->view('templates/header', $data);
         $this->load->view('products/index', $data);
