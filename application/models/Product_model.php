@@ -12,7 +12,22 @@ class Product_model extends CI_Model {
         return $query->result();
     }
     
+    public function get_product_by_id($id) {
+        $query = $this->db->get_where('products', array('id' => $id));
+        return $query->row();
+    }
+    
     public function insert_product($data) {
         return $this->db->insert('products', $data);
+    }
+
+    public function update_product($id, $data) {
+        $this->db->where('id', $id);
+        return $this->db->update('products', $data);
+    }
+
+    public function delete_product($id) {
+        $this->db->where('id', $id);
+        return $this->db->delete('products');
     }
 }
