@@ -107,6 +107,28 @@ class Products extends CI_Controller {
         }
     }
 
+    public function update_status() {
+        $id = $this->input->post('id');
+        $is_sell = $this->input->post('is_sell');
+        
+        if (!$id) {
+            echo json_encode(['success' => false, 'message' => 'ID produk tidak valid']);
+            return;
+        }
+
+        $product = $this->product_model->get_product_by_id($id);
+        if (empty($product)) {
+            echo json_encode(['success' => false, 'message' => 'Produk tidak ditemukan']);
+            return;
+        }
+
+        if ($this->product_model->update_product_status($id, $is_sell)) {
+            echo json_encode(['success' => true, 'message' => 'Status produk berhasil diperbarui']);
+        } else {
+            echo json_encode(['success' => false, 'message' => 'Gagal memperbarui status produk']);
+        }
+    }
+
     public function delete($id = NULL) {
         if ($id === NULL) {
             redirect('products');

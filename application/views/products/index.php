@@ -43,20 +43,20 @@
                                 <i class="bi bi-arrow-<?php echo ($sort_by == 'name' ? ($sort_order == 'asc' ? 'down' : 'up') : 'down-up'); ?>"></i>
                             </a>
                         </th>
-                        <th style="width: 20%;">
+                        <th style="width: 20%;" class="text-end">
                             Harga
                             <a href="<?php echo site_url('products?sort_by=price&sort_order=' . ($sort_by == 'price' && $sort_order == 'asc' ? 'desc' : 'asc') . ($search ? '&search='.$search : '')); ?>" class="text-decoration-none">
                                 <i class="bi bi-arrow-<?php echo ($sort_by == 'price' ? ($sort_order == 'asc' ? 'down' : 'up') : 'down-up'); ?>"></i>
                             </a>
                         </th>
-                        <th style="width: 15%;">
+                        <th style="width: 15%;" class="text-center">
                             Stok
                             <a href="<?php echo site_url('products?sort_by=stock&sort_order=' . ($sort_by == 'stock' && $sort_order == 'asc' ? 'desc' : 'asc') . ($search ? '&search='.$search : '')); ?>" class="text-decoration-none">
                                 <i class="bi bi-arrow-<?php echo ($sort_by == 'stock' ? ($sort_order == 'asc' ? 'down' : 'up') : 'down-up'); ?>"></i>
                             </a>
                         </th>
-                        <th style="width: 15%;">Status</th>
-                        <th style="width: 20%;">Aksi</th>
+                        <th style="width: 15%;" class="text-center">Status</th>
+                        <th style="width: 20%;" class="text-center">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -69,15 +69,14 @@
                         <td class="text-end">Rp <?php echo number_format($product->price, 0, ',', '.'); ?></td>
                         <td class="text-center"><?php echo number_format($product->stock, 0, ',', '.'); ?></td>
                         <td class="text-center">
-                            <?php if($product->is_sell): ?>
-                                <span class="badge bg-success">
-                                    <i class="bi bi-check-circle me-1"></i> Dijual
+                            <div class="form-check form-switch d-flex justify-content-center">
+                                <input type="checkbox" class="form-check-input status-toggle" 
+                                       data-id="<?php echo $product->id; ?>"
+                                       <?php echo $product->is_sell ? 'checked' : ''; ?>>
+                                <span class="status-text ms-2 <?php echo $product->is_sell ? 'text-success' : 'text-danger'; ?>">
+                                    <?php echo $product->is_sell ? 'Dijual' : 'Tidak Dijual'; ?>
                                 </span>
-                            <?php else: ?>
-                                <span class="badge bg-danger">
-                                    <i class="bi bi-x-circle me-1"></i> Tidak Dijual
-                                </span>
-                            <?php endif; ?>
+                            </div>
                         </td>
                         <td class="text-center">
                             <a href="<?php echo site_url('products/edit/'.$product->id); ?>" class="btn btn-sm btn-warning">
@@ -137,11 +136,90 @@
     </div>
 </div>
 
+<!-- Toast Notifikasi -->
+<div class="toast-container position-fixed bottom-0 end-0 p-3">
+    <div id="statusToast" class="toast align-items-center text-white border-0" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="d-flex">
+            <div class="toast-body">
+                <i class="bi bi-info-circle me-2"></i>
+                <span id="toastMessage"></span>
+            </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+    </div>
+</div>
+
 <script>
+// Konfirmasi Hapus
 function confirmDelete(id, name) {
     document.getElementById('productName').textContent = name;
     document.getElementById('deleteButton').href = '<?php echo site_url('products/delete/'); ?>' + id;
     var deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
     deleteModal.show();
 }
+
+// Update Status
+document.addEventListener('DOMContentLoaded', function() {
+    const statusToggles = document.querySelectorAll('.status-toggle');
+    const toast = new bootstrap.Toast(document.getElementById('statusToast'));
+    
+    statusToggles.forEach(toggle => {
+        toggle.addEventListener('change', function() {
+            const productId = this.dataset.id;
+            const isChecked = this.checked;
+            const statusText = this.parentElement.querySelector('.status-text');
+            
+            // Simpan elemen yang digunakan
+            const toggleElement = this;
+            const originalChecked = !isChecked;
+            
+            // Kirim permintaan AJAX
+            fetch('<?php echo site_url('products/update_status'); ?>', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: 'id=' + productId + '&is_sell=' + (isChecked ? 1 : 0)
+            })
+            .then(response => response.json())
+            .then(data => {
+                const toastElement = document.getElementById('statusToast');
+                const toastMessage = document.getElementById('toastMessage');
+                
+                if (data.success) {
+                    // Update tampilan
+                    statusText.textContent = isChecked ? 'Dijual' : 'Tidak Dijual';
+                    statusText.className = 'status-text ms-2 ' + (isChecked ? 'text-success' : 'text-danger');
+                    
+                    // Tampilkan toast sukses
+                    toastElement.classList.remove('bg-danger');
+                    toastElement.classList.add('bg-success');
+                    toastMessage.textContent = data.message;
+                } else {
+                    // Kembalikan toggle ke posisi semula
+                    toggleElement.checked = originalChecked;
+                    
+                    // Tampilkan toast error
+                    toastElement.classList.remove('bg-success');
+                    toastElement.classList.add('bg-danger');
+                    toastMessage.textContent = data.message;
+                }
+                
+                toast.show();
+            })
+            .catch(error => {
+                // Kembalikan toggle ke posisi semula
+                toggleElement.checked = originalChecked;
+                
+                // Tampilkan toast error
+                const toastElement = document.getElementById('statusToast');
+                const toastMessage = document.getElementById('toastMessage');
+                toastElement.classList.remove('bg-success');
+                toastElement.classList.add('bg-danger');
+                toastMessage.textContent = 'Terjadi kesalahan saat memperbarui status';
+                toast.show();
+            });
+        });
+    });
+});
 </script>

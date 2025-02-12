@@ -45,6 +45,14 @@ class Product_model extends CI_Model {
         return $this->db->update('products', $data);
     }
 
+    public function update_product_status($id, $is_sell) {
+        $this->db->where('id', $id);
+        return $this->db->update('products', array(
+            'is_sell' => $is_sell,
+            'updated_at' => date('Y-m-d H:i:s')
+        ));
+    }
+
     public function delete_product($id) {
         $this->db->where('id', $id);
         return $this->db->delete('products');
