@@ -4,11 +4,16 @@ $title = $is_edit ? 'Edit Produk' : 'Tambah Produk Baru';
 ?>
 
 <div class="card">
-    <div class="card-header">
+    <div class="card-header d-flex justify-content-between align-items-center">
         <h5 class="card-title mb-0">
             <i class="bi bi-<?php echo $is_edit ? 'pencil' : 'plus-lg'; ?>"></i>
             <?php echo $title; ?>
         </h5>
+        <?php if($is_edit): ?>
+        <button type="button" class="btn btn-danger btn-sm" onclick="confirmDelete()">
+            <i class="bi bi-trash"></i> Hapus Produk
+        </button>
+        <?php endif; ?>
     </div>
     <div class="card-body">
         <?php if(validation_errors()): ?>
@@ -60,7 +65,7 @@ $title = $is_edit ? 'Edit Produk' : 'Tambah Produk Baru';
                     <input type="checkbox" class="form-check-input" id="is_sell" name="is_sell" value="1"
                            <?php echo set_checkbox('is_sell', '1', $is_edit && $product->is_sell); ?>>
                     <label class="form-check-label" for="is_sell">
-                        <span id="statusText">
+                        <span id="statusText" class="<?php echo $is_edit && $product->is_sell ? 'text-success' : 'text-danger'; ?>">
                             <?php echo $is_edit && $product->is_sell ? 'Dijual' : 'Tidak Dijual'; ?>
                         </span>
                     </label>
@@ -69,7 +74,7 @@ $title = $is_edit ? 'Edit Produk' : 'Tambah Produk Baru';
 
             <div class="d-flex gap-2">
                 <button type="submit" class="btn btn-primary">
-                    <i class="bi bi-save"></i> Simpan
+                    <i class="bi bi-save"></i> <?php echo $is_edit ? 'Simpan Perubahan' : 'Simpan'; ?>
                 </button>
                 <a href="<?php echo site_url('products'); ?>" class="btn btn-secondary">
                     <i class="bi bi-x-lg"></i> Batal
@@ -78,6 +83,38 @@ $title = $is_edit ? 'Edit Produk' : 'Tambah Produk Baru';
         </form>
     </div>
 </div>
+
+<!-- Modal Konfirmasi Hapus -->
+<?php if($is_edit): ?>
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteModalLabel">
+                    <i class="bi bi-exclamation-triangle-fill text-danger me-2"></i>
+                    Konfirmasi Hapus
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-0">Apakah Anda yakin ingin menghapus produk <strong><?php echo htmlspecialchars($product->name); ?></strong>?</p>
+                <small class="text-danger">
+                    <i class="bi bi-exclamation-circle"></i>
+                    Tindakan ini tidak dapat dibatalkan
+                </small>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="bi bi-x-lg"></i> Batal
+                </button>
+                <a href="<?php echo site_url('products/delete/'.$product->id); ?>" class="btn btn-danger">
+                    <i class="bi bi-trash"></i> Hapus
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+<?php endif; ?>
 
 <script>
 // Form validation
@@ -100,6 +137,7 @@ $title = $is_edit ? 'Edit Produk' : 'Tambah Produk Baru';
     
     statusToggle.addEventListener('change', function() {
         statusText.textContent = this.checked ? 'Dijual' : 'Tidak Dijual';
+        statusText.className = this.checked ? 'text-success' : 'text-danger';
     });
     
     // Format harga saat input
@@ -115,4 +153,12 @@ $title = $is_edit ? 'Edit Produk' : 'Tambah Produk Baru';
         this.value = Math.floor(this.value); // Memastikan input berupa bilangan bulat
     });
 })();
+
+<?php if($is_edit): ?>
+// Fungsi untuk menampilkan modal konfirmasi hapus
+function confirmDelete() {
+    var deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+    deleteModal.show();
+}
+<?php endif; ?>
 </script>
